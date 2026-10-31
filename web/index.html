@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en" data-app="wizard-apple-health" data-version="0.1.0">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark light">
+  <title>Apple Health</title>
+  <script src="boot.js"></script>
+  <link rel="stylesheet" href="wizard-tokens.css">
+  <link rel="stylesheet" href="wizard-ui.css">
+  <link rel="stylesheet" href="standalone.css">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="/wizard-os-home/core/app-client.js"></script>
+  <script defer src="wizard-sheet.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <div class="wz-app">
+    <main class="wz-scroll" id="main">
+      <section class="hl-top" aria-label="Apple Health connection">
+        <div class="wz-conn hl-solid">
+          <div class="wz-tile hl-logo" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="6" y="5" width="12" height="14" rx="3.5"/><path d="M9 5l.6-3h4.8l.6 3M9 19l.6 3h4.8l.6-3"/><path class="hl-heart" d="M12 15.2c-1.9-1.3-3.1-2.4-3.1-3.8 0-1 .7-1.7 1.6-1.7.6 0 1.2.3 1.5.9.3-.6.9-.9 1.5-.9.9 0 1.6.7 1.6 1.7 0 1.4-1.2 2.5-3.1 3.8Z"/></svg></div>
+          <div class="wz-main"><b>Apple Health</b><small id="conn-line">Checking…</small></div>
+          <span id="conn-pill" class="wz-pill off">…</span>
+        </div>
+      </section>
+
+      <!-- Receiving: what arrived, one action, details. -->
+      <section id="account" class="hl-account" hidden aria-label="Data from your iPhone">
+        <ul class="wz-list hl-solid hl-rows">
+          <li class="wz-row">
+            <span class="wz-tile hl-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg></span>
+            <span class="wz-main"><b id="acct-name">Your iPhone</b><small id="acct-sub"></small></span>
+          </li>
+          <li class="wz-row">
+            <span class="wz-tile hl-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 20h14"/></svg></span>
+            <span class="wz-main"><b id="sync-title">Last data</b><small id="sync-sub"></small></span>
+          </li>
+        </ul>
+        <p id="sync-error" class="hl-warn" hidden></p>
+        <div class="wz-actions">
+          <a class="wz-button" id="open-health" href="/wizard-health/">Open Health</a>
+          <button type="button" class="wz-button secondary" id="show-setup">Setup steps</button>
+        </div>
+        <p class="hl-hint hl-pad">Your sleep, heart and activity show in the Health app. New data arrives when your iPhone is unlocked and Tailscale is on.</p>
+      </section>
+
+      <!-- Guided setup: shown until the first data arrives (and on demand). One step open at a time. -->
+      <section id="setup" class="hl-setup" hidden aria-label="Set up Apple Health">
+        <p class="hl-lead">Your iPhone sends its Apple Health data to this Wizard with the app Health Auto Export. Four steps, all on your iPhone.</p>
+        <ol class="hl-steps">
+          <li class="hl-step" data-step="1">
+            <button type="button" class="hl-step-h"><span class="hl-num">1</span><span class="hl-step-t">Get Health Auto Export with Premium</span></button>
+            <div class="hl-step-b">
+              <p>Health Auto Export is an iPhone app by HealthyApps (not by Apple or Wizard). Sending data to your Wizard needs its <b>Premium</b> tier: <span id="v-prices">$0.99 a month, $5.99 a year or $24.99 once</span>, paid through the App Store.</p>
+              <ol class="hl-sub">
+                <li>Install Health Auto Export on the iPhone that has your Apple Health data.</li>
+                <li>Open it and allow it to read Health (tap <b>Turn On All</b>, then <b>Allow</b>).</li>
+                <li>Buy Premium inside the app.</li>
+              </ol>
+              <div class="wz-actions">
+                <a class="wz-button" id="hae-link" target="_blank" rel="noopener noreferrer">Open in the App Store</a>
+                <button type="button" class="wz-button secondary" data-next="2">Done, next</button>
+              </div>
+            </div>
+          </li>
+          <li class="hl-step" data-step="2">
+            <button type="button" class="hl-step-h"><span class="hl-num">2</span><span class="hl-step-t">Put your iPhone on Tailscale</span></button>
+            <div class="hl-step-b">
+              <p>Your Wizard is private: only your own devices on Tailscale can reach it. Nothing is sent over the open internet.</p>
+              <ol class="hl-sub">
+                <li>Install Tailscale on the iPhone (skip this if the Wizard app already works there).</li>
+                <li>Sign in with the same account you use for this Wizard and switch Tailscale on.</li>
+                <li>Check it: open this address in Safari on the iPhone. It should say "Your iPhone can reach your Wizard".</li>
+              </ol>
+              <div class="hl-field"><span>Check address</span><div class="hl-copy"><input id="v-ping" readonly aria-label="Check address"><button type="button" class="hl-cbtn" data-copy="v-ping">Copy</button></div></div>
+              <div class="wz-actions">
+                <a class="wz-button secondary" id="ts-link" target="_blank" rel="noopener noreferrer">Get Tailscale</a>
+                <button type="button" class="wz-button" data-next="3">It works, next</button>
+              </div>
+            </div>
+          </li>
+          <li class="hl-step" data-step="3">
+            <button type="button" class="hl-step-h"><span class="hl-num">3</span><span class="hl-step-t">Create the automation</span></button>
+            <div class="hl-step-b">
+              <p>In Health Auto Export open the menu, tap <b>Automations</b>, then <b>New Automation</b>, and choose <b>REST API</b>. Fill it in with these values; each has a Copy button.</p>
+              <div class="hl-field"><span>Name</span><div class="hl-copy"><input id="v-name" readonly aria-label="Automation name"><button type="button" class="hl-cbtn" data-copy="v-name">Copy</button></div></div>
+              <div class="hl-field"><span>URL</span><div class="hl-copy"><textarea id="v-url" rows="2" readonly spellcheck="false" aria-label="URL"></textarea><button type="button" class="hl-cbtn" data-copy="v-url">Copy</button></div>
+                <small class="hl-hint">Works only on your Tailscale network, which is why step 2 matters.</small></div>
+              <div class="hl-field"><span>Headers: tap Add Headers, then the key on the left and the value on the right</span>
+                <div class="hl-copy"><input id="v-hkey" readonly aria-label="Header key"><button type="button" class="hl-cbtn" data-copy="v-hkey">Copy</button></div>
+                <div class="hl-copy"><input id="v-hval" readonly aria-label="Header value" spellcheck="false"><button type="button" class="hl-cbtn" data-copy="v-hval">Copy</button></div>
+                <small class="hl-hint">The value is this Wizard's private token for your iPhone. Data without it is refused.</small></div>
+              <div class="hl-field"><span>Select Health Metrics: turn on these</span>
+                <ul class="hl-scopes" id="v-metrics"></ul>
+                <div class="hl-copy"><textarea id="v-metrics-all" rows="3" readonly aria-label="Metrics list"></textarea><button type="button" class="hl-cbtn" data-copy="v-metrics-all">Copy</button></div>
+                <small class="hl-hint">The first seven matter most. Leave the others off if your iPhone has no data for them.</small></div>
+              <div class="hl-field"><span>Settings</span><dl class="hl-set" id="v-settings"></dl></div>
+              <p>Tap <b>Save</b>.</p>
+              <details class="hl-more">
+                <summary>Workouts too (optional, a second automation)</summary>
+                <p class="hl-plain">Health Auto Export sends one kind of data per automation. For workouts, create another REST API automation with the same URL and header, and these settings:</p>
+                <dl class="hl-set" id="v-wsettings"></dl>
+              </details>
+              <div class="wz-actions"><button type="button" class="wz-button" data-next="4">Saved, next</button></div>
+            </div>
+          </li>
+          <li class="hl-step" data-step="4">
+            <button type="button" class="hl-step-h"><span class="hl-num">4</span><span class="hl-step-t">Send your data now</span></button>
+            <div class="hl-step-b">
+              <ol class="hl-sub">
+                <li>In the automation, tap <b>Manual Export</b>.</li>
+                <li>Choose a date range. Pick the last few months once to bring in your history.</li>
+                <li>Tap <b>Export</b> and keep the iPhone unlocked until it finishes.</li>
+              </ol>
+              <div class="hl-live" id="live" data-state="waiting" role="status" aria-live="polite">
+                <span class="hl-dot" aria-hidden="true"></span>
+                <span class="wz-main"><b id="live-title">Waiting for your iPhone…</b><small id="live-sub">This updates by itself.</small></span>
+              </div>
+              <p id="live-problem" class="hl-warn" hidden></p>
+              <div class="wz-actions" id="live-actions" hidden>
+                <a class="wz-button" href="/wizard-health/" id="open-health-2">Open Health</a>
+              </div>
+              <p class="hl-hint">After this, Health Auto Export sends new data by itself about every hour while your iPhone is unlocked.</p>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <details class="wz-more" id="more" hidden>
+        <summary>Connection details</summary>
+        <dl class="hl-dl" id="details"></dl>
+        <div class="wz-actions">
+          <button type="button" class="wz-button secondary" id="open-rotate">Rotate token</button>
+          <button type="button" class="wz-button secondary hl-danger" id="open-disconnect">Disconnect</button>
+        </div>
+      </details>
+    </main>
+    <p id="status" class="wz-status wz-sr" role="status" aria-live="polite"></p>
+  </div>
+
+  <dialog class="wz-sheet" id="sheet-rotate" aria-labelledby="sr-h">
+    <h2 id="sr-h">Rotate the token?</h2>
+    <p>The old token stops working at once. Your iPhone sends nothing until you paste the new header value into Health Auto Export (step 3). Your data here stays.</p>
+    <div class="wz-actions"><button type="button" class="wz-button" id="sr-go">Rotate token</button></div>
+  </dialog>
+
+  <dialog class="wz-sheet" id="sheet-disconnect" aria-labelledby="sd-h">
+    <h2 id="sd-h">Disconnect Apple Health?</h2>
+    <p>The app deletes everything your iPhone sent here and its token. Health stops showing Apple Health data. Nothing on your iPhone changes; delete the automation in Health Auto Export too.</p>
+    <div class="wz-actions"><button type="button" class="wz-button hl-danger-fill" id="sd-go">Disconnect</button></div>
+  </dialog>
+</body>
+</html>

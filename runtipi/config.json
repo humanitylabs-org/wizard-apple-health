@@ -1,0 +1,29 @@
+{
+  "name": "Apple Health",
+  "id": "wizard-apple-health",
+  "wizard_type": "external",
+  "available": true,
+  "short_desc": "External: receive Apple Health data from your iPhone through the Health Auto Export app over Tailscale (read-only for Health). Needs Health Auto Export Premium.",
+  "author": "Humanity Labs",
+  "port": 8844,
+  "categories": [
+    "network"
+  ],
+  "description": "Apple Health has no cloud API, so this app is a private receiver: the third-party iPhone app Health Auto Export (Premium, about $0.99 a month, $5.99 a year or $24.99 once) posts your sleep, heart rate variability, resting heart rate, blood oxygen, Exercise minutes, energy, steps and workouts to your Wizard over Tailscale with a private token. The app's own screen walks you through it with Copy buttons and confirms when data arrives. It keeps a private copy and offers it read-only to other apps on this box through the health-data contract; the Health app shows it. Not affiliated with Apple.",
+  "tipi_version": 1,
+  "version": "0.1.0",
+  "source": "https://github.com/oscarhenrycollins/wizard-apple-health",
+  "exposable": false,
+  "supported_architectures": [
+    "amd64",
+    "arm64"
+  ],
+  "created_at": 1793440638000,
+  "updated_at": 1793440638000,
+  "dynamic_config": true,
+  "min_tipi_version": "4.8.0",
+  "uid": 1000,
+  "gid": 1000,
+  "form_fields": [],
+  "no_gui": false
+}
