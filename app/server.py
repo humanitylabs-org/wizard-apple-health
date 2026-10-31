@@ -31,12 +31,15 @@ ROOT = Path(__file__).resolve().parent.parent if '__file__' in globals() else Pa
 DATA = Path(os.environ.get('DATA_DIR', ROOT / '.data'))
 APP_ID = 'wizard-apple-health'
 NAME = 'Apple Health'
-VERSION = '0.1.0'
+VERSION = '0.1.1'
 PREFIX = '/' + APP_ID
 PORT = os.environ.get('PORT', '8844')
 HEADER = 'X-Wizard-Token'                       # the header name the owner enters in Health Auto Export
 MAX_PUSH_BYTES = int(os.environ.get('APPLE_MAX_PUSH_BYTES', str(16 * 1024 * 1024)))
-MAX_ITEMS = int(os.environ.get('APPLE_MAX_ITEMS', '200000'))   # data points + workouts in one push
+MAX_ITEMS = int(os.environ.get('APPLE_MAX_ITEMS', '200000'))
+# An oversize body up to this size is read and dropped before the 413, so a proxy in front (Tailscale Serve) passes the
+# 413 on instead of turning a half-read request into a 502.
+DRAIN_BYTES = int(os.environ.get('APPLE_DRAIN_BYTES', str(256 * 1024 * 1024)))   # data points + workouts in one push
 QUIET_HOURS = float(os.environ.get('APPLE_QUIET_HOURS', '48'))  # no push for this long: say so in status.error
 SHELL_PORT = os.environ.get('APPLE_SHELL_PORT', '8444')
 HAE_URL = 'https://apps.apple.com/us/app/health-auto-export-json-csv/id1115567069'
@@ -908,10 +911,18 @@ class Handler(BaseHTTPRequestHandler):
         p = urlsplit(self.path).path
         return '/' if p == PREFIX else p[len(PREFIX):] if p.startswith(PREFIX + '/') else p
 
+    def _drop(self, n):
+        while n > 0:
+            got = self.rfile.read(min(n, 1 << 20))
+            if not got:
+                return
+            n -= len(got)
+
     def raw_body(self, cap):
-        """The request body, refusing more than `cap` bytes (Content-Length or chunked)."""
+        """The request body, refusing more than `cap` bytes (Content-Length or chunked). A body over the cap but under
+        DRAIN_BYTES is read and dropped first, so the 413 reaches the sender through a proxy."""
         if 'chunked' in (self.headers.get('Transfer-Encoding') or '').lower():
-            out = bytearray()
+            out, total, over = bytearray(), 0, False
             while True:
                 line = self.rfile.readline(64)
                 try:
@@ -920,16 +931,26 @@ class Handler(BaseHTTPRequestHandler):
                     raise Problem(400, 'Bad chunked body.') from None
                 if size == 0:
                     self.rfile.readline(64)
+                    if over:
+                        raise Problem(413, 'Request too large.')
                     return bytes(out)
-                if len(out) + size > cap:
-                    raise Problem(413, 'Request too large.')
-                out += self.rfile.read(size)
+                total += size
+                if total > cap:
+                    over = True
+                    out = bytearray()
+                    if total > DRAIN_BYTES:
+                        raise Problem(413, 'Request too large.')
+                    self._drop(size)
+                else:
+                    out += self.rfile.read(size)
                 self.rfile.readline(4)
         try:
             size = int(self.headers.get('Content-Length', '0') or 0)
         except ValueError:
             raise Problem(400, 'Bad Content-Length.') from None
         if size < 0 or size > cap:
+            if 0 < size <= DRAIN_BYTES:
+                self._drop(size)
             raise Problem(413, 'Request too large.')
         return self.rfile.read(size) if size else b''
 

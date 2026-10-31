@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-app="wizard-apple-health" data-version="0.1.0">
+<html lang="en" data-app="wizard-apple-health" data-version="0.1.1">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -73,7 +73,7 @@
                 <li>Sign in with the same account you use for this Wizard and switch Tailscale on.</li>
                 <li>Check it: open this address in Safari on the iPhone. It should say "Your iPhone can reach your Wizard".</li>
               </ol>
-              <div class="hl-field"><span>Check address</span><div class="hl-copy"><input id="v-ping" readonly aria-label="Check address"><button type="button" class="hl-cbtn" data-copy="v-ping">Copy</button></div></div>
+              <div class="hl-field"><span>Check address</span><div class="hl-copy"><textarea id="v-ping" rows="2" readonly spellcheck="false" aria-label="Check address"></textarea><button type="button" class="hl-cbtn" data-copy="v-ping">Copy</button></div></div>
               <div class="wz-actions">
                 <a class="wz-button secondary" id="ts-link" target="_blank" rel="noopener noreferrer">Get Tailscale</a>
                 <button type="button" class="wz-button" data-next="3">It works, next</button>
@@ -85,11 +85,11 @@
             <div class="hl-step-b">
               <p>In Health Auto Export open the menu, tap <b>Automations</b>, then <b>New Automation</b>, and choose <b>REST API</b>. Fill it in with these values; each has a Copy button.</p>
               <div class="hl-field"><span>Name</span><div class="hl-copy"><input id="v-name" readonly aria-label="Automation name"><button type="button" class="hl-cbtn" data-copy="v-name">Copy</button></div></div>
-              <div class="hl-field"><span>URL</span><div class="hl-copy"><textarea id="v-url" rows="2" readonly spellcheck="false" aria-label="URL"></textarea><button type="button" class="hl-cbtn" data-copy="v-url">Copy</button></div>
+              <div class="hl-field"><span>URL</span><div class="hl-copy"><textarea id="v-url" rows="3" readonly spellcheck="false" aria-label="URL"></textarea><button type="button" class="hl-cbtn" data-copy="v-url">Copy</button></div>
                 <small class="hl-hint">Works only on your Tailscale network, which is why step 2 matters.</small></div>
               <div class="hl-field"><span>Headers: tap Add Headers, then the key on the left and the value on the right</span>
                 <div class="hl-copy"><input id="v-hkey" readonly aria-label="Header key"><button type="button" class="hl-cbtn" data-copy="v-hkey">Copy</button></div>
-                <div class="hl-copy"><input id="v-hval" readonly aria-label="Header value" spellcheck="false"><button type="button" class="hl-cbtn" data-copy="v-hval">Copy</button></div>
+                <div class="hl-copy"><textarea id="v-hval" rows="2" readonly aria-label="Header value" spellcheck="false"></textarea><button type="button" class="hl-cbtn" data-copy="v-hval">Copy</button></div>
                 <small class="hl-hint">The value is this Wizard's private token for your iPhone. Data without it is refused.</small></div>
               <div class="hl-field"><span>Select Health Metrics: turn on these</span>
                 <ul class="hl-scopes" id="v-metrics"></ul>

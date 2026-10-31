@@ -160,6 +160,18 @@ class TestLimits(Base):
             code = e.code
         self.assertEqual(code, 413)
 
+    def test_chunked_ok_and_oversize(self):
+        import http.client
+        def send(body):
+            c = http.client.HTTPConnection('127.0.0.1', PORT, timeout=10)
+            c.request('POST', '/api/push', body=iter([body[i:i + 4096] for i in range(0, len(body), 4096)]),
+                      headers={'Content-Type': 'application/json', 'X-Wizard-Token': token()}, encode_chunked=True)
+            r = c.getresponse(); r.read(); c.close()
+            return r.status
+        self.assertEqual(send(json.dumps(samples.metrics_payload()).encode()), 200)
+        big = samples.metrics_payload(); big['pad'] = 'x' * (300 * 1024)
+        self.assertEqual(send(json.dumps(big).encode()), 413)
+
     def test_csv_is_415(self):
         s, b = req('POST', '/api/push', raw=b'a,b\n1,2', headers={'Content-Type': 'multipart/form-data; boundary=x', 'X-Wizard-Token': token()})
         self.assertEqual(s, 415)

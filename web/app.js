@@ -202,8 +202,12 @@ function render() {
 
 async function refresh() {
   try {
+    const before = S && received();
+    const watching = !el('setup').hidden;
     S = await api('api/status');
     if (!SETUP) SETUP = await api('api/setup');
+    // The first data arrived while the owner watches the steps: keep them open so step 4 shows the receipt.
+    if (before === false && received() && watching) showSetup = true;
     render();
   } catch (err) { say(err.message, 'error'); }
 }
