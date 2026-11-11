@@ -4,7 +4,7 @@ id: wizard-apple-health
 name: Apple Health
 type: external
 category: system
-version: 0.1.2
+version: 0.1.3
 summary: Receive Apple Health data from your iPhone via the Health Auto Export app over Tailscale, for Health and your other apps.
 tags: [data]
 license: GPL-3.0-only
@@ -35,6 +35,9 @@ system: true
 uses: []
 needs: []
 health: /healthz
+switches:
+  contract: wizard.app-switches/1
+  path: /api/switches
 ---
 
 # Apple Health

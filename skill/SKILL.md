@@ -1,7 +1,7 @@
 ---
 name: wizard-apple-health
 description: Use when the owner asks about his Apple Health or Apple Watch connection, its setup or last data. Health questions go to Health.
-version: 0.1.2
+version: 0.1.3
 author: Humanity Labs
 license: GPL-3.0-only
 metadata:
